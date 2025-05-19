@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.HashMap;
 
 public class RoomAdventure {
     private static Room currentRoom;
@@ -9,25 +10,19 @@ public class RoomAdventure {
         "Sorry, I do not understand. Try [verb] [noun]. Valid verbs include 'go', 'look', and 'take'.";
     
     private static void handleGo(String noun) {
-        String[] exitDirections = currentRoom.getExitDirections();
-        Room[] exitDestinations = currentRoom.getExitDestinations();
+        HashMap<String, Room> exitHashMap = currentRoom.getExits();
         status = "I don't see that room";
-        for (int i = 0; i < exitDirections.length; i ++) {
-            if (noun.equals(exitDirections[i])) {
-                currentRoom = exitDestinations[i];
-                status = "Changed Room";
-            }
+        if (exitHashMap.containsKey(noun)) {
+            currentRoom = exitHashMap.get(noun);
+            status = "Changed Room";
         }
     }
 
     private static void handleLook(String noun) {
-        String[] items = currentRoom.getItems();
-        String[] itemDescriptions = currentRoom.getitemDescriptions();
+        HashMap<String,String> items = currentRoom.itemsHashMap;
         status = "I don't see that item";
-        for (int i = 0; i < items.length; i++) {
-            if (noun.equals(items[i])) {
-                status = itemDescriptions[i];
-            }
+        if (items.containsKey(noun)) {
+            status = items.get(noun);
         }
     }
 
@@ -51,34 +46,39 @@ public class RoomAdventure {
     private static void setupGame() {
         Room room1 = new Room("Room 1");
         Room room2 = new Room("Room 2");
+        Room room3 = new Room("Room 3");
+        Room room4 = new Room("Room 4");
 
-        String[] room1ExitDirections = {"east"};
-        Room[] room1ExitDestinations = {room2};
-        String[] room1Items = {"chair", "desk"};
-        String[] room1ItemDescriptions = {
-            "It is a chair",
-            "it is a desk, there is a key on it",
-        };
         String[] room1Grabbables = {"key"};
-        room1.setExitDirections(room1ExitDirections);
-        room1.setExitDestinations(room1ExitDestinations);
-        room1.setItems(room1Items);
-        room1.setItemDescriptions(room1ItemDescriptions);
+        room1.addExit("east", room2);
+        room1.addExit("north", room3);
+        room1.addItem("chair", "It is a chair");
+        room1.addItem("desk", "there is an old wooden desk with a key on top");
         room1.setGrabbables(room1Grabbables);
 
-        String[] room2ExitDirections = {"west"};
-        Room[] room2ExitDestinations = {room1};
-        String[] room2Items = {"fireplace", "rug",};
-        String[] room2ItemDescriptions = {
-            "It is on fire",
-            "There s a lump of coal on the rug",
-        };
         String[] room2Grabbables = {"coal"};
-        room2.setExitDirections(room2ExitDirections);
-        room2.setExitDestinations(room2ExitDestinations);
-        room2.setItems(room2Items);
-        room2.setItemDescriptions(room2ItemDescriptions);
+        room2.addExit("west", room1);
+        room2.addExit("north", room4);
+        room2.addItem("fireplace", "it is on fire");
+        room2.addItem("rug", "There is a lump of coal on the rug");
         room2.setGrabbables(room2Grabbables);
+
+
+        String[] room3Grabbables = {"ke"};
+        room3.addExit("south", room1);
+        room3.addExit("east", room4);
+        room3.addItem("wall", "it is a wall");
+        room3.addItem("floor", "floor description");
+        room3.setGrabbables(room3Grabbables);
+
+
+        String[] room4Grabbables = {"ke"};
+        room4.addExit("south", room2);
+        room4.addExit("west", room3);
+        room4.addItem("car", "there is a broken car in the room");
+        room4.addItem("person", "there is someone staring at you in the room");
+        room4.setGrabbables(room4Grabbables);
+
 
         currentRoom = room1;
     }
@@ -102,6 +102,7 @@ public class RoomAdventure {
 
             if (words.length != 2) {
                 status = DEFAULT_STATUS;
+                System.out.println(status);
                 continue;
             }
 
@@ -129,46 +130,28 @@ public class RoomAdventure {
 
 class Room {
     private String name;
-    private String[] exitDirections;
-    private Room[] exitDestinations;
-    private String[] items;
-    private String[] itemDescriptions;
     private String[] grabbables;
-
+    HashMap<String, Room> exitHashMap = new HashMap<String, Room>();
+    HashMap<String, String> itemsHashMap = new HashMap<String, String>();
+    
     public Room(String name) {
         this.name = name;
     }
 
-    public void setExitDirections(String[] exitDirections) {
-        this.exitDirections = exitDirections;
+
+    public void addExit(String direction, Room roomName) {
+        exitHashMap.put(direction, roomName);
     }
 
-    public String[] getExitDirections () {
-        return this.exitDirections;
+    public HashMap<String, Room> getExits() {
+        return exitHashMap;
+    }
+    public void addItem(String item, String itemDescription) {
+        itemsHashMap.put(item, itemDescription);
     }
 
-    public void setExitDestinations(Room[] exitDestinations) {
-        this.exitDestinations = exitDestinations;
-    }
-
-    public Room[] getExitDestinations() {
-        return exitDestinations;
-    }
-
-    public void setItems(String[] items) {
-        this.items = items;
-    }
-
-    public String[] getItems() {
-        return items;
-    }
-
-    public void setItemDescriptions(String[] itemDescriptions) {
-        this.itemDescriptions = itemDescriptions;
-    }
-
-    public String[] getitemDescriptions() {
-        return itemDescriptions;
+    public HashMap<String, String> getItemsHashMap() {
+        return itemsHashMap;
     }
 
     public void setGrabbables(String[] grabbables) {
@@ -183,12 +166,12 @@ class Room {
     public String toString() {
         String result = "\nLocation:" + name;
         result += "\nYou See ";
-        for (String item:items) {
+        for (String item: itemsHashMap.keySet()) {
             result +=item + " ";
         }
         result += "\nExits ";
-        for (String direction:exitDirections) {
-            result += direction + " ";
+        for (String exit: exitHashMap.keySet()) {
+            result += exit + " ";
         }
         return result + "\n";
     }
