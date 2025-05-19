@@ -10,24 +10,19 @@ public class RoomAdventure {
         "Sorry, I do not understand. Try [verb] [noun]. Valid verbs include 'go', 'look', and 'take'.";
     
     private static void handleGo(String noun) {
-        String[] exitDirections = currentRoom.getExitDirections();
-        Room[] exitDestinations = currentRoom.getExitDestinations();
+        HashMap<String, Room> exitHashMap = currentRoom.getExits();
         status = "I don't see that room";
-        for (int i = 0; i < exitDirections.length; i ++) {
-            if (noun.equals(exitDirections[i])) {
-                currentRoom = exitDestinations[i];
-                status = "Changed Room";
-            }
+        if (exitHashMap.containsKey(noun)) {
+            currentRoom = exitHashMap.get(noun);
+            status = "Changed Room";
         }
     }
 
     private static void handleLook(String noun) {
         HashMap<String,String> items = currentRoom.itemsHashMap;
+        status = "I don't see that item";
         if (items.containsKey(noun)) {
             status = items.get(noun);
-        }
-        else {
-            status = "I don't see that item";
         }
     }
 
@@ -57,6 +52,7 @@ public class RoomAdventure {
         String[] room1ExitDirections = {"east", "north"};
         Room[] room1ExitDestinations = {room2, room3};
         String[] room1Grabbables = {"key"};
+        room1.ad
         room1.setExitDirections(room1ExitDirections);
         room1.setExitDestinations(room1ExitDestinations);
         room1.addItem("chair", "It is a chair");
@@ -145,6 +141,7 @@ class Room {
     private String[] exitDirections;
     private Room[] exitDestinations;
     private String[] grabbables;
+    HashMap<String, Room> exitHashMap = new HashMap<String, Room>();
     HashMap<String, String> itemsHashMap = new HashMap<String, String>();
     
     public Room(String name) {
@@ -167,6 +164,13 @@ class Room {
         return exitDestinations;
     }
 
+    public void addExit(String direction, Room roomName) {
+        exitHashMap.put(direction, roomName);
+    }
+
+    public HashMap<String, Room> getExits() {
+        return exitHashMap;
+    }
     public void addItem(String item, String itemDescription) {
         itemsHashMap.put(item, itemDescription);
     }
