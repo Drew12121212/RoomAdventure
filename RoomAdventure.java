@@ -49,40 +49,32 @@ public class RoomAdventure {
         Room room3 = new Room("Room 3");
         Room room4 = new Room("Room 4");
 
-        String[] room1ExitDirections = {"east", "north"};
-        Room[] room1ExitDestinations = {room2, room3};
         String[] room1Grabbables = {"key"};
-        room1.ad
-        room1.setExitDirections(room1ExitDirections);
-        room1.setExitDestinations(room1ExitDestinations);
+        room1.addExit("east", room2);
+        room1.addExit("north", room3);
         room1.addItem("chair", "It is a chair");
         room1.addItem("desk", "there is an old wooden desk with a key on top");
         room1.setGrabbables(room1Grabbables);
 
-        String[] room2ExitDirections = {"west", "north"};
-        Room[] room2ExitDestinations = {room1, room4};
         String[] room2Grabbables = {"coal"};
-        room2.setExitDirections(room2ExitDirections);
-        room2.setExitDestinations(room2ExitDestinations);
+        room2.addExit("west", room1);
+        room2.addExit("north", room4);
         room2.addItem("fireplace", "it is on fire");
         room2.addItem("rug", "There is a lump of coal on the rug");
         room2.setGrabbables(room2Grabbables);
 
 
-        String[] room3ExitDirections = {"south", "east"};
-        Room[] room3ExitDestinations = {room1, room4};
         String[] room3Grabbables = {"ke"};
-        room3.setExitDirections(room3ExitDirections);
-        room3.setExitDestinations(room3ExitDestinations);
+        room3.addExit("south", room1);
+        room3.addExit("east", room4);
         room3.addItem("wall", "it is a wall");
         room3.addItem("floor", "floor description");
         room3.setGrabbables(room3Grabbables);
 
-        String[] room4ExitDirections = {"south", "west"};
-        Room[] room4ExitDestinations = {room2, room3};
+
         String[] room4Grabbables = {"ke"};
-        room4.setExitDirections(room4ExitDirections);
-        room4.setExitDestinations(room4ExitDestinations);
+        room4.addExit("south", room2);
+        room4.addExit("west", room3);
         room4.addItem("car", "there is a broken car in the room");
         room4.addItem("person", "there is someone staring at you in the room");
         room4.setGrabbables(room4Grabbables);
@@ -138,8 +130,6 @@ public class RoomAdventure {
 
 class Room {
     private String name;
-    private String[] exitDirections;
-    private Room[] exitDestinations;
     private String[] grabbables;
     HashMap<String, Room> exitHashMap = new HashMap<String, Room>();
     HashMap<String, String> itemsHashMap = new HashMap<String, String>();
@@ -148,21 +138,6 @@ class Room {
         this.name = name;
     }
 
-    public void setExitDirections(String[] exitDirections) {
-        this.exitDirections = exitDirections;
-    }
-
-    public String[] getExitDirections () {
-        return this.exitDirections;
-    }
-
-    public void setExitDestinations(Room[] exitDestinations) {
-        this.exitDestinations = exitDestinations;
-    }
-
-    public Room[] getExitDestinations() {
-        return exitDestinations;
-    }
 
     public void addExit(String direction, Room roomName) {
         exitHashMap.put(direction, roomName);
@@ -195,8 +170,8 @@ class Room {
             result +=item + " ";
         }
         result += "\nExits ";
-        for (String direction:exitDirections) {
-            result += direction + " ";
+        for (String exit: exitHashMap.keySet()) {
+            result += exit + " ";
         }
         return result + "\n";
     }
