@@ -5,6 +5,7 @@ public class RoomAdventure {
     private static Room currentRoom;
     private static String[] inventory = {null,null,null,null,null};
     private static String status;
+    private static boolean running = true;
 
     final private static String DEFAULT_STATUS = 
         "Sorry, I do not understand. Try [verb] [noun]. Valid verbs include 'go', 'look', and 'take'.";
@@ -20,9 +21,17 @@ public class RoomAdventure {
 
     private static void handleLook(String noun) {
         HashMap<String,String> items = currentRoom.itemsHashMap;
+        Edible[] edibles = currentRoom.getEdibles();
         status = "I don't see that item";
         if (items.containsKey(noun)) {
             status = items.get(noun);
+        }
+        else {
+            for (Edible item: edibles) {
+                if (noun.equals(item.edibleName)) {
+                    status = item.edibleDescription;
+                }
+            }
         }
     }
 
@@ -40,6 +49,24 @@ public class RoomAdventure {
                 }
             }
         }
+    }
+
+    private static void handleEat(String noun) {
+        Edible[] edibles = currentRoom.getEdibles();
+        handleTake(noun);
+        if (status.equals("I can't grab that")) {
+            for (Edible item: edibles) {
+                if (noun.equals(item.edibleName)) {
+                    status = item.edibleMessage;
+                    Globals.health += item.healthChange;
+                    Edible[] emptyEdible = new Edible[0];
+                    currentRoom.addEdibles(emptyEdible);
+                }
+            }
+
+        } else {
+            status = "I can't eat that but I added it to the inventory";
+        }
 
     }
 
@@ -50,9 +77,12 @@ public class RoomAdventure {
         Room room4 = new Room("Room 4");
 
         String[] room1Grabbables = {"key"};
+        Edible chickenLeg = new Edible("chicken", "a good looking grilled chicken leg", "you ate the chicken leg and feel restored", 20);
+        Edible[] edibles = {chickenLeg};
+        room1.addEdibles(edibles);
         room1.addExit("east", room2);
         room1.addExit("north", room3);
-        room1.addItem("chair", "It is a chair");
+        room1.addItem("chair", "It is a chair with a plate of chicken on it");
         room1.addItem("desk", "there is an old wooden desk with a key on top");
         room1.setGrabbables(room1Grabbables);
 
@@ -87,7 +117,7 @@ public class RoomAdventure {
     public static void main(String[] args) {
         setupGame();
 
-        while (true) {
+        while (running) {
             System.out.print(currentRoom.toString());
             System.out.print("Inventory: ");
 
@@ -98,6 +128,11 @@ public class RoomAdventure {
             System.out.println("\nWhat would you like to do?");
             Scanner s = new Scanner(System.in);
             String input = s.nextLine();
+            if (input.equals("quit")) {
+                running = false;
+                s.close();
+                continue;
+            }
             String[] words = input.split(" ");
 
             if (words.length != 2) {
@@ -113,11 +148,14 @@ public class RoomAdventure {
                 case "go":
                     handleGo(noun);
                     break;
-                case "look":
+                case "look": 
                     handleLook(noun);
                     break;
                 case "take":
                     handleTake(noun);
+                    break;
+                case "eat":
+                    handleEat(noun);
                     break;
                 default:
                     status = DEFAULT_STATUS;
@@ -133,11 +171,19 @@ class Room {
     private String[] grabbables;
     HashMap<String, Room> exitHashMap = new HashMap<String, Room>();
     HashMap<String, String> itemsHashMap = new HashMap<String, String>();
+    private Edible[] edibles;
     
     public Room(String name) {
         this.name = name;
     }
 
+    public void addEdibles(Edible[] edibles) {
+        this.edibles = edibles;
+    }
+
+    public Edible[] getEdibles() {
+        return this.edibles;
+    }
 
     public void addExit(String direction, Room roomName) {
         exitHashMap.put(direction, roomName);
@@ -162,9 +208,11 @@ class Room {
         return grabbables;
     }
 
+
     @Override
     public String toString() {
         String result = "\nLocation:" + name;
+        result += "\n You have " + Globals.health + " remaining" ;
         result += "\nYou See ";
         for (String item: itemsHashMap.keySet()) {
             result +=item + " ";
@@ -176,3 +224,16 @@ class Room {
         return result + "\n";
     }
 }
+
+class Edible {
+        public String edibleName;
+        public String edibleDescription;
+        public String edibleMessage;
+        public int healthChange;
+        public Edible(String edibleName, String edibleDescription, String edibleMessage, int healthChange) {
+            this.edibleName = edibleName;
+            this.edibleDescription = edibleDescription;
+            this.edibleMessage = edibleMessage;
+            this.healthChange = healthChange;
+        }
+    }
