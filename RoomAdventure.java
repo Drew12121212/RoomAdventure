@@ -70,6 +70,9 @@ public class RoomAdventure {
 
     }
 
+    private static String redText(String text) {
+        return Globals.RED + text + Globals.RESET;
+    }
     private static void setupGame() {
         Room room1 = new Room("Room 1");
         Room room2 = new Room("Room 2");
@@ -78,12 +81,12 @@ public class RoomAdventure {
 
         String[] room1Grabbables = {"key"};
         Edible chickenLeg = new Edible("chicken", "a good looking grilled chicken leg", "you ate the chicken leg and feel restored", 20);
-        Edible[] edibles = {chickenLeg};
-        room1.addEdibles(edibles);
+        Edible[] edibles1 = {chickenLeg};
+        room1.addEdibles(edibles1);
         room1.addExit("east", room2);
         room1.addExit("north", room3);
-        room1.addItem("chair", "It is a chair with a plate of chicken on it");
-        room1.addItem("desk", "there is an old wooden desk with a key on top");
+        room1.addItem("chair", "It is a chair with a plate of " + redText("chicken") + " on it");
+        room1.addItem("desk", "there is an old wooden desk with a " + redText("key") + " on top");
         room1.setGrabbables(room1Grabbables);
 
         String[] room2Grabbables = {"coal"};
@@ -95,11 +98,14 @@ public class RoomAdventure {
 
 
         String[] room3Grabbables = {"ke"};
+        Edible beefPatty = new Edible("patty", "a old moldy beef patty", "You at the beef patty and instantly feel sick", -50);
+        Edible[] edibles3 = {beefPatty};
         room3.addExit("south", room1);
         room3.addExit("east", room4);
-        room3.addItem("wall", "it is a wall");
+        room3.addItem("wall", "It is a wall with a " + redText("patty") + " stuck on it");
         room3.addItem("floor", "floor description");
         room3.setGrabbables(room3Grabbables);
+        room3.addEdibles(edibles3);
 
 
         String[] room4Grabbables = {"ke"};
