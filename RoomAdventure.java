@@ -9,7 +9,7 @@ public class RoomAdventure {
     private static boolean running = true;
 
     final private static String DEFAULT_STATUS = 
-        "Sorry, I do not understand. Try [verb] [noun]. Valid verbs include 'go', 'look', 'eat', 'answer', 'talk' and 'take'.";
+        "Sorry, I do not understand. Try [verb] [noun]. Valid verbs include 'go', 'look', 'eat', 'answer', 'talk' , 'take','combine', and 'use'.";
     
     private static void handleGo(String noun) {
         HashMap<String, Room> exitHashMap = currentRoom.getExits();
@@ -115,7 +115,83 @@ public class RoomAdventure {
     }
 
 
-    private static String redText(String text) {
+ // Feature added by Ashish'use' command
+ 
+private static void handleUse(String noun) {
+    status = "You can't use that.";
+    for (String item : inventory) {
+        if (item != null && noun.equals(item)) {
+            if (noun.equals("key") && currentRoom.getName().equals("Labratory")) {
+                currentRoom.addItem("note", "A glowing note that reads: 'The answer is echo.'");
+
+                String[] currentGrabbables = currentRoom.getGrabbables();
+                String[] newGrabbables = new String[currentGrabbables.length + 1];
+                for (int i = 0; i < currentGrabbables.length; i++) {
+                    newGrabbables[i] = currentGrabbables[i];
+                }
+                newGrabbables[currentGrabbables.length] = "note";
+                currentRoom.setGrabbables(newGrabbables);
+
+                status = "You used the key to unlock a drawer. A glowing note appears!";
+            } else if (noun.equals("coal") && currentRoom.getName().equals("Riddle Room")) {
+                status = "You used the coal on the tablet: '...without a mouth...' appears.";
+            } else if (noun.equals("flaming_sword") && currentRoom.getName().equals("Armory")) {
+                status = "You wave the flaming sword. A hidden passage opens behind the wall!";
+                currentRoom.addExit("secret", new Room("Secret Chamber"));
+            } else if (noun.equals("decoded_note") && currentRoom.getName().equals("Riddle Room")) {
+                status = "You read the decoded note: 'Echo is the answer.' The stone tablet crumbles.";
+                puzzleSolved = true;
+            } else {
+                status = "You used the " + noun + ", but nothing happened.";
+            }
+            return;
+        }
+    }
+}
+
+
+
+// Feature added by Ashish 'combine' command
+private static void handleCombine(String noun1, String noun2) {
+    int firstIndex = -1, secondIndex = -1;
+    for (int i = 0; i < inventory.length; i++) {
+        if (noun1.equals(inventory[i])) firstIndex = i;
+        if (noun2.equals(inventory[i])) secondIndex = i;
+    }
+
+    if (firstIndex != -1 && secondIndex != -1) {
+        if ((noun1.equals("key") && noun2.equals("coal")) || (noun1.equals("coal") && noun2.equals("key"))) {
+            inventory[firstIndex] = "firekey";
+            inventory[secondIndex] = null;
+            status = "You combined key and coal into a firekey!";
+        } else if ((noun1.equals("sword") && noun2.equals("firekey")) || (noun1.equals("firekey") && noun2.equals("sword"))) {
+            inventory[firstIndex] = "flaming_sword";
+            inventory[secondIndex] = null;
+            status = "You combined the sword with the firekey. It becomes a flaming sword!";
+        } else if ((noun1.equals("microscope") && noun2.equals("note")) || (noun1.equals("note") && noun2.equals("microscope"))) {
+            inventory[firstIndex] = "decoded_note";
+            inventory[secondIndex] = null;
+            status = "You used the microscope to examine the note. You now have a decoded note!";
+        } else if ((noun1.equals("coal") && noun2.equals("patty")) || (noun1.equals("patty") && noun2.equals("coal"))) {
+            inventory[firstIndex] = "burnt_patty";
+            inventory[secondIndex] = null;
+            status = "You burned the patty using coal. It's now a burnt patty!";
+        } else {
+            status = "Those items can't be combined.";
+        }
+    } else {
+        status = "You don't have both items.";
+    }
+}
+
+
+
+
+
+    
+
+
+     private static String redText(String text) {
         return Globals.RED + text + Globals.RESET;
     }
 
@@ -193,7 +269,7 @@ public class RoomAdventure {
             }
             String[] words = input.split(" ");
 
-            if (words.length != 2) {
+            if (!(words.length == 2 || (words.length == 3 && words[0].equals("combine")))) {
                 status = DEFAULT_STATUS;
                 System.out.println(status);
                 continue;
@@ -221,6 +297,14 @@ public class RoomAdventure {
                 case "eat":
                     handleEat(noun);
                     break;
+                case "use":
+                    handleUse(noun);
+                    break;
+                
+                case "combine":
+                handleCombine(words[1], words[2]);
+                break;
+
                 default:
                     status = DEFAULT_STATUS;
             }
