@@ -24,10 +24,13 @@ public class RoomAdventure {
             } else {
                 currentRoom = nextRoom;
                 status = "Changed Room";
+            if (currentRoom.getEnemy() != null) {
+            Globals.health -= currentRoom.getEnemyDamage();
+            status += "\nA deadly " + currentRoom.getEnemy() + " jumps out and attacks you! You lose " + currentRoom.getEnemyDamage() + " health!\nYou need to use something to fight it off!";
+            }
             }
         }
     }
-
 
     private static void handleLook(String noun) {
         HashMap<String,String> items = currentRoom.itemsHashMap;
@@ -44,7 +47,6 @@ public class RoomAdventure {
             }
         }
     }
-
 
     //feature added by aayusha
     private static void handleTalk(String noun) {
@@ -114,12 +116,66 @@ public class RoomAdventure {
         }
     }
 
-
-    private static String redText(String text) {
-        return Globals.RED + text + Globals.RESET;
+private static void handleUse(String noun) {
+    boolean hasItem = false;
+    for (String item : inventory) {
+        if (noun.equals(item)) {
+            hasItem = true;
+            break;
+        }
     }
 
+    if (!hasItem) {
+        status = "You don't have that item.";
+        return;
+    }
+
+    if (noun.equals("newspaper") && currentRoom.getEnemy() != null && currentRoom.getEnemy().equals("spider")) {
+        currentRoom.setEnemy(null, 0);
+        status = "You smack the spider with the newspaper. It's dead!";
+    } else {
+        status = "You can't use that here.";
+    }
+}
+
+private static void handleAttack() {
+    if (currentRoom.getEnemy() == null) {
+        status = "There's nothing to attack here.";
+        return;
+    }
+
+    for (String item : inventory) {
+        if ("newspaper".equals(item)) {
+            currentRoom.setEnemy(null, 0);
+            status = "You smack the spider with the newspaper. It's dead!";
+            return;
+        }
+    }
+
+    status = "You have nothing to attack with!";
+}
+
+private static String redText(String text) {
+    return Globals.RED + text + Globals.RESET;
+}
+
     private static void setupGame() {
+        System.out.println("Welcome to Room Adventure!");
+        System.out.println("Your goal is to explore rooms, collect items, and survive.");
+        System.out.println("Commands (use [verb] [noun]):");
+        System.out.println("- go [direction]   → move to a different room");
+        System.out.println("- look [item]      → inspect something in the room");
+        System.out.println("- take [item]      → pick up an item");
+        System.out.println("- eat [item]       → consume an edible item");
+        System.out.println("- use [item]       → use item from inventory");
+        System.out.println("- talk [person]    → talk to someone");
+        System.out.println("- attack [name]    → attack enemy");
+        System.out.println("- quit             → exit the game");
+        System.out.println("\nYou can carry up to 5 items.");
+        System.out.println("Health reaching 0 means game over.");
+        System.out.println("Press Enter to start the game...");
+        new Scanner(System.in).nextLine();
+        
         Room livingRoom = new Room("Living Room");
         Room foyer = new Room("Foyer");
         Room armory = new Room("Armory");
@@ -142,17 +198,18 @@ public class RoomAdventure {
         foyer.addItem("fireplace", "it is on fire");
         foyer.addItem("rug", "There is a lump of " + redText("coal") + " on the rug");
         foyer.setGrabbables(foyerGrabbables);
+        foyer.setEnemy("spider", 10);
 
 
-        String[] armoryGrabbables = {"sword"};
+        String[] armoryGrabbables = {"newspaper"};
         Edible beefPatty = new Edible("patty", "a old moldy beef patty", "You at the beef patty and instantly feel sick", -50);
         Edible[] edibles3 = {beefPatty};
         armory.addExit("south", livingRoom);
         armory.addExit("east", labratory);
         armory.addItem("wall", "A solid stone wall with a " + redText("patty") + " stuck on it");
-        armory.addItem("stand", "An ornate stand with a foreign " + redText("sword") + " layed upon in");
-        armory.setGrabbables(armoryGrabbables);
+        armory.addItem("dresser", "\tThere’s an old dresser here, with a rolled-up " + redText("newspaper") + " on top.\n\tIt looks sturdy — maybe useful for swatting something...");
         armory.addEdibles(edibles3);
+        armory.setGrabbables(armoryGrabbables);
 
 
         String[] labratoryGrabbables = {"microscope"};
@@ -171,8 +228,16 @@ public class RoomAdventure {
         currentRoom = livingRoom;
     }
 
+
     @SuppressWarnings("java:S2189")
     public static void main(String[] args) {
+        Scanner s = new Scanner(System.in);
+
+        do {
+        Globals.health = 100; // Reset health on restart
+        inventory = new String[]{null, null, null, null, null};
+        puzzleSolved = false;
+        running = true;
         setupGame();
 
         while (running) {
@@ -184,11 +249,8 @@ public class RoomAdventure {
             }
             
             System.out.println("\nWhat would you like to do?");
-            Scanner s = new Scanner(System.in);
             String input = s.nextLine();
             if (input.equals("quit")) {
-                running = false;
-                s.close();
                 continue;
             }
             String[] words = input.split(" ");
@@ -221,13 +283,29 @@ public class RoomAdventure {
                 case "eat":
                     handleEat(noun);
                     break;
+                case "use":
+                    handleUse(noun);
+                    break;
+                case "attack":
+                handleAttack();
+                break;
                 default:
                     status = DEFAULT_STATUS;
             }
-
+/////////// Kim's change - game over and option to play again
             System.out.println(status);
+            if (Globals.health <= 0) {
+                System.out.println("You have no health left... Game over.");
+                running = false;
+            break;
+            }
         }
-    }
+     System.out.println("Would you like to play again? (yes/no)");
+    } while (s.nextLine().trim().equalsIgnoreCase("yes"));
+
+    System.out.println("Thanks for playing!");
+    s.close();  
+}
 }
 
 class Room {
@@ -236,6 +314,9 @@ class Room {
     HashMap<String, Room> exitHashMap = new HashMap<String, Room>();
     HashMap<String, String> itemsHashMap = new HashMap<String, String>();
     private Edible[] edibles;
+    private String enemy;
+    private int enemyDamage;
+
     
     public Room(String name) {
         this.name = name;
@@ -275,7 +356,12 @@ class Room {
     public String[] getGrabbables() {
         return grabbables;
     }
-
+    public void setEnemy(String name, int damage) {
+    this.enemy = name;
+    this.enemyDamage = damage;
+    }
+    public String getEnemy() { return enemy; }
+    public int getEnemyDamage() { return enemyDamage; }
 
     @Override
     public String toString() {
@@ -285,6 +371,9 @@ class Room {
         for (String item: itemsHashMap.keySet()) {
             result +=item + " ";
         }
+        if (enemy != null) {
+        result += "\nA deadly " + enemy + " is here, and it's ready to attack!";
+    }
         result += "\nExits ";
         for (String exit: exitHashMap.keySet()) {
             result += exit + " ";
