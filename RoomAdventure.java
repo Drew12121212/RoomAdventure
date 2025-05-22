@@ -103,17 +103,17 @@ public class RoomAdventure {
     }
 
     private static void handleAnswer(String noun) {
-    if (currentRoom.getName().equals("Riddle Room")) {
-        if (noun.equalsIgnoreCase("echo")) {
-            puzzleSolved = true;
-            status = "Correct! The tablet glows and a path opens.";
+        if (currentRoom.getName().equals("Riddle Room")) {
+            if (noun.equalsIgnoreCase("echo")) {
+                puzzleSolved = true;
+                status = "Correct! The tablet glows and a path opens.";
+            } else {
+                status = "Incorrect. The tablet remains silent.";
+            }
         } else {
-            status = "Incorrect. The tablet remains silent.";
+            status = "There’s no riddle to answer here.";
         }
-    } else {
-        status = "There’s no riddle to answer here.";
     }
-}
 
 
     private static String redText(String text) {
@@ -220,6 +220,7 @@ public class RoomAdventure {
                     break;
                 case "answer":
                     handleAnswer(noun);
+                    break;
                 case "eat":
                     handleEat(noun);
                     break;
