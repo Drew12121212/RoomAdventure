@@ -1,9 +1,3 @@
-// RoomAdventure.java
-// Author: Ash
-// Feature Branch: feature-use-command, feature-combine-items
-// Features Added:
-// - "use" command to interact with objects using inventory items
-// - "combine" command to combine two items in inventory
 
 import java.util.Scanner;
 import java.util.HashMap;
