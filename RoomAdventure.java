@@ -5,19 +5,29 @@ public class RoomAdventure {
     private static Room currentRoom;
     private static String[] inventory = {null,null,null,null,null};
     private static String status;
+    private static boolean puzzleSolved = false;
     private static boolean running = true;
 
     final private static String DEFAULT_STATUS = 
         "Sorry, I do not understand. Try [verb] [noun]. Valid verbs include 'go', 'look', and 'take'.";
     
     private static void handleGo(String noun) {
-        HashMap<String, Room> exitHashMap = currentRoom.getExits();
-        status = "I don't see that room";
-        if (exitHashMap.containsKey(noun)) {
-            currentRoom = exitHashMap.get(noun);
+    HashMap<String, Room> exitHashMap = currentRoom.getExits();
+    status = "I don't see that room";
+
+    if (exitHashMap.containsKey(noun)) {
+        Room nextRoom = exitHashMap.get(noun);
+
+        //if in Riddle Room and puzzle not solved, block leaving
+        if (currentRoom.getName().equals("Riddle Room") && !puzzleSolved) {
+            status = "You are stuck here until you answer the riddle.";
+        } else {
+            currentRoom = nextRoom;
             status = "Changed Room";
         }
     }
+}
+
 
     private static void handleLook(String noun) {
         HashMap<String,String> items = currentRoom.itemsHashMap;
@@ -34,6 +44,28 @@ public class RoomAdventure {
             }
         }
     }
+
+
+    //feature added by aayusha
+    private static void handleTalk(String noun) {
+    status = "There's no one to talk to.";
+
+    if (noun.equals("person") && currentRoom.getItemsHashMap().containsKey("person")) {
+        switch (currentRoom.toString()) {
+            case "Room 4":
+                status = "The person stares blankly and whispers: 'You must solve the puzzle to escape...'";
+                break;
+            case "Room 3":
+                status = "The person smiles softly: 'You found me... I’ve been waiting.'";
+                break;
+            default:
+                status = "The person blinks silently. No response.";
+        }
+    } else if (noun.equals("person")) {
+        status = "Theres no person here to talk to.";
+    }
+}
+
 
     private static void handleTake(String noun) {
         String[] grabbables = currentRoom.getGrabbables();
@@ -70,6 +102,20 @@ public class RoomAdventure {
 
     }
 
+    private static void handleAnswer(String noun) {
+    if (currentRoom.getName().equals("Riddle Room")) {
+        if (noun.equalsIgnoreCase("echo")) {
+            puzzleSolved = true;
+            status = "Correct! The tablet glows and a path opens.";
+        } else {
+            status = "Incorrect. The tablet remains silent.";
+        }
+    } else {
+        status = "There’s no riddle to answer here.";
+    }
+}
+
+
     private static String redText(String text) {
         return Globals.RED + text + Globals.RESET;
     }
@@ -78,6 +124,9 @@ public class RoomAdventure {
         Room room2 = new Room("Room 2");
         Room room3 = new Room("Room 3");
         Room room4 = new Room("Room 4");
+
+
+
 
         String[] room1Grabbables = {"key"};
         Edible chickenLeg = new Edible("chicken", "a good looking grilled chicken leg", "you ate the chicken leg and feel restored", 20);
@@ -115,7 +164,13 @@ public class RoomAdventure {
         room4.addItem("person", "there is someone staring at you in the room");
         room4.setGrabbables(room4Grabbables);
 
-
+        //adding riddle room by aayusha
+        Room riddleRoom = new Room("Riddle Room");
+        riddleRoom.addItem("tablet", "There is an ancient stone tablet with an inscription: 'I speak without a mouth and hear without ears. What am I?'");
+        riddleRoom.setGrabbables(new String[]{});
+        //connecting riddle room to room 3
+        room3.addExit("north", riddleRoom);         
+        riddleRoom.addExit("south", room3);
         currentRoom = room1;
     }
 
@@ -160,6 +215,11 @@ public class RoomAdventure {
                 case "take":
                     handleTake(noun);
                     break;
+                case "talk":
+                    handleTalk(noun);
+                    break;
+                case "answer":
+                    handleAnswer(noun);
                 case "eat":
                     handleEat(noun);
                     break;
@@ -181,6 +241,10 @@ class Room {
     
     public Room(String name) {
         this.name = name;
+    }
+
+    public String getName() {
+    return name;
     }
 
     public void addEdibles(Edible[] edibles) {
