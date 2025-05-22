@@ -3,7 +3,7 @@ import java.util.HashMap;
 
 public class RoomAdventure {
     private static Room currentRoom;
-    private static String[] inventory = {null,null,null,null,null};
+    private static String[] inventory = {null,null,null,null,null, null, null};
     private static String status;
     private static boolean puzzleSolved = false;
     private static boolean running = true;
@@ -116,50 +116,51 @@ public class RoomAdventure {
         }
     }
 
-private static void handleUse(String noun) {
-    boolean hasItem = false;
-    for (String item : inventory) {
-        if (noun.equals(item)) {
-            hasItem = true;
-            break;
-        }
-    }
+    private static void handleUse(String noun) {
+        status = "You can't use that.";
+        for (String item : inventory) {
+            if (item != null && noun.equals(item)) {
+                if (noun.equals("key") && currentRoom.getName().equals("Labratory")) {
+                    currentRoom.addItem("note", "A glowing note that reads: 'The answer is echo.'");
 
-    if (!hasItem) {
-        status = "You don't have that item.";
-        return;
- 
-private static void handleUse(String noun) {
-    status = "You can't use that.";
-    for (String item : inventory) {
-        if (item != null && noun.equals(item)) {
-            if (noun.equals("key") && currentRoom.getName().equals("Labratory")) {
-                currentRoom.addItem("note", "A glowing note that reads: 'The answer is echo.'");
 
-                String[] currentGrabbables = currentRoom.getGrabbables();
-                String[] newGrabbables = new String[currentGrabbables.length + 1];
-                for (int i = 0; i < currentGrabbables.length; i++) {
-                    newGrabbables[i] = currentGrabbables[i];
+                    ///no clue what this is doing but im going to just add a note to the inventory instead
+                    /*
+                    String[] currentGrabbables = currentRoom.getGrabbables();
+                    String[] newGrabbables = new String[currentGrabbables.length + 1];
+                    for (int i = 0; i < currentGrabbables.length; i++) {
+                        newGrabbables[i] = currentGrabbables[i];
+                    }
+                    newGrabbables[currentGrabbables.length] = "note";
+                    currentRoom.setGrabbables(newGrabbables);
+                    */
+
+                    for (int i = 0; i <inventory.length; i ++) {
+                    if (inventory[i] == null) {
+                        inventory[i] = "note";
+                        break;
+                    }
                 }
-                newGrabbables[currentGrabbables.length] = "note";
-                currentRoom.setGrabbables(newGrabbables);
 
-                status = "You used the key to unlock a drawer. A glowing note appears!";
-            } else if (noun.equals("coal") && currentRoom.getName().equals("Riddle Room")) {
-                status = "You used the coal on the tablet: '...without a mouth...' appears.";
-            } else if (noun.equals("flaming_sword") && currentRoom.getName().equals("Armory")) {
-                status = "You wave the flaming sword. A hidden passage opens behind the wall!";
-                currentRoom.addExit("secret", new Room("Secret Chamber"));
-            } else if (noun.equals("decoded_note") && currentRoom.getName().equals("Riddle Room")) {
-                status = "You read the decoded note: 'Echo is the answer.' The stone tablet crumbles.";
-                puzzleSolved = true;
-            } else {
-                status = "You used the " + noun + ", but nothing happened.";
+                    status = "You used the key to unlock a drawer. A glowing note appears!";
+                } else if (noun.equals("coal") && currentRoom.getName().equals("Riddle Room")) {
+                    status = "You used the coal on the tablet: '...without a mouth...' appears.";
+                } else if (noun.equals("flaming_stick") && currentRoom.getName().equals("Armory") && puzzleSolved) {
+                    System.out.println("You wave the flaming stick. A hidden passage opens behind the wall!");
+                    System.out.println("You have escaped the House\nYou Win");
+                    running = false;
+                    status = "";
+                    //currentRoom.addExit("secret", new Room("Secret Chamber"));
+                } else if (noun.equals("decoded_note") && currentRoom.getName().equals("Riddle Room")) {
+                    status = "You read the decoded note: 'Echo is the answer.' The stone tablet crumbles.";
+                    puzzleSolved = true;
+                } else {
+                    status = "You used the " + noun + ", but nothing happened.";
+                }
+                return;
             }
-            return;
         }
     }
-}
 
 
 
@@ -176,8 +177,8 @@ private static void handleUse(String noun) {
                 inventory[firstIndex] = "firekey";
                 inventory[secondIndex] = null;
                 status = "You combined key and coal into a firekey!";
-            } else if ((noun1.equals("sword") && noun2.equals("firekey")) || (noun1.equals("firekey") && noun2.equals("sword"))) {
-                inventory[firstIndex] = "flaming_sword";
+            } else if ((noun1.equals("stick") && noun2.equals("firekey")) || (noun1.equals("firekey") && noun2.equals("stick"))) {
+                inventory[firstIndex] = "flaming_stick";
                 inventory[secondIndex] = null;
                 status = "You combined the sword with the firekey. It becomes a flaming sword!";
             } else if ((noun1.equals("microscope") && noun2.equals("note")) || (noun1.equals("note") && noun2.equals("microscope"))) {
@@ -194,57 +195,45 @@ private static void handleUse(String noun) {
         } else {
             status = "You don't have both items.";
         }
-} 
+    } 
 
-     private static String redText(String text) {
-        return Globals.RED + text + Globals.RESET;
-    }
-
-    if (noun.equals("newspaper") && currentRoom.getEnemy() != null && currentRoom.getEnemy().equals("spider")) {
-        currentRoom.setEnemy(null, 0);
-        status = "You smack the spider with the newspaper. It's dead!";
-    } else {
-        status = "You can't use that here.";
-    }
-}
-
-private static void handleAttack() {
-    if (currentRoom.getEnemy() == null) {
-        status = "There's nothing to attack here.";
-        return;
-    }
-
-    for (String item : inventory) {
-        if ("newspaper".equals(item)) {
-            currentRoom.setEnemy(null, 0);
-            status = "You smack the spider with the newspaper. It's dead!";
+    private static void handleAttack() {
+        if (currentRoom.getEnemy() == null) {
+            status = "There's nothing to attack here.";
             return;
         }
+
+        for (String item : inventory) {
+            if ("newspaper".equals(item)) {
+                currentRoom.setEnemy(null, 0);
+                status = "You smack the spider with the newspaper. It's dead!";
+                return;
+            }
+        }
+
+        status = "You have nothing to attack with!";
     }
 
-    status = "You have nothing to attack with!";
-}
-
-private static String redText(String text) {
-    return Globals.RED + text + Globals.RESET;
-}
+    private static String redText(String text) {
+        return Globals.RED + text + Globals.RESET;
+    }
 
     private static void setupGame() {
         System.out.println("Welcome to Room Adventure!");
         System.out.println("Your goal is to explore rooms, collect items, and survive.");
         System.out.println("Commands (use [verb] [noun]):");
-        System.out.println("- go [direction]   → move to a different room");
-        System.out.println("- look [item]      → inspect something in the room");
-        System.out.println("- take [item]      → pick up an item");
-        System.out.println("- eat [item]       → consume an edible item");
-        System.out.println("- use [item]       → use item from inventory");
-        System.out.println("- talk [person]    → talk to someone");
-        System.out.println("- attack [name]    → attack enemy");
-        System.out.println("- quit             → exit the game");
-        System.out.println("\nYou can carry up to 5 items.");
+        System.out.println("- go [direction]           → move to a different room");
+        System.out.println("- look [item]              → inspect something in the room");
+        System.out.println("- take [item]              → pick up an item");
+        System.out.println("- eat [item]               → consume an edible item");
+        System.out.println("- use [item]               → use item from inventory");
+        System.out.println("- talk [person]            → talk to someone");
+        System.out.println("- attack [name]            → attack enemy");
+        System.out.println("- combine [item] [item]    → creates a new item");
+        System.out.println("- quit                     → exit the game");
+        System.out.println();
         System.out.println("Health reaching 0 means game over.");
-        System.out.println("Press Enter to start the game...");
-        new Scanner(System.in).nextLine();
+        System.out.println();
         
         Room livingRoom = new Room("Living Room");
         Room foyer = new Room("Foyer");
@@ -262,10 +251,10 @@ private static String redText(String text) {
         livingRoom.addItem("desk", "there is an old wooden desk with a " + redText("key") + " on top");
         livingRoom.setGrabbables(livingRoomGrabbables);
 
-        String[] foyerGrabbables = {"coal"};
+        String[] foyerGrabbables = {"coal", "stick"};
         foyer.addExit("west", livingRoom);
         foyer.addExit("north", labratory);
-        foyer.addItem("fireplace", "it is on fire");
+        foyer.addItem("fireplace", "there is a fireplace with a log that can be used as a " + redText("stick"));
         foyer.addItem("rug", "There is a lump of " + redText("coal") + " on the rug");
         foyer.setGrabbables(foyerGrabbables);
         foyer.setEnemy("spider", 10);
@@ -305,7 +294,7 @@ private static String redText(String text) {
 
         do {
         Globals.health = 100; // Reset health on restart
-        inventory = new String[]{null, null, null, null, null};
+        inventory = new String[]{null, null, null, null, null, null, null};
         puzzleSolved = false;
         running = true;
         setupGame();
@@ -321,6 +310,7 @@ private static String redText(String text) {
             System.out.println("\nWhat would you like to do?");
             String input = s.nextLine();
             if (input.equals("quit")) {
+                running = false;
                 continue;
             }
             String[] words = input.split(" ");
