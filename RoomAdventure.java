@@ -9,24 +9,24 @@ public class RoomAdventure {
     private static boolean running = true;
 
     final private static String DEFAULT_STATUS = 
-        "Sorry, I do not understand. Try [verb] [noun]. Valid verbs include 'go', 'look', and 'take'.";
+        "Sorry, I do not understand. Try [verb] [noun]. Valid verbs include 'go', 'look', 'eat', 'answer', 'talk' and 'take'.";
     
     private static void handleGo(String noun) {
-    HashMap<String, Room> exitHashMap = currentRoom.getExits();
-    status = "I don't see that room";
+        HashMap<String, Room> exitHashMap = currentRoom.getExits();
+        status = "I don't see that room";
 
-    if (exitHashMap.containsKey(noun)) {
-        Room nextRoom = exitHashMap.get(noun);
+        if (exitHashMap.containsKey(noun)) {
+            Room nextRoom = exitHashMap.get(noun);
 
-        //if in Riddle Room and puzzle not solved, block leaving
-        if (currentRoom.getName().equals("Riddle Room") && !puzzleSolved) {
-            status = "You are stuck here until you answer the riddle.";
-        } else {
-            currentRoom = nextRoom;
-            status = "Changed Room";
+            //if in Riddle Room and puzzle not solved, block leaving
+            if (currentRoom.getName().equals("Riddle Room") && !puzzleSolved) {
+                status = "You are stuck here until you answer the riddle.";
+            } else {
+                currentRoom = nextRoom;
+                status = "Changed Room";
+            }
         }
     }
-}
 
 
     private static void handleLook(String noun) {
@@ -48,23 +48,23 @@ public class RoomAdventure {
 
     //feature added by aayusha
     private static void handleTalk(String noun) {
-    status = "There's no one to talk to.";
+        status = "There's no one to talk to.";
 
-    if (noun.equals("person") && currentRoom.getItemsHashMap().containsKey("person")) {
-        switch (currentRoom.toString()) {
-            case "Room 4":
-                status = "The person stares blankly and whispers: 'You must solve the puzzle to escape...'";
-                break;
-            case "Room 3":
-                status = "The person smiles softly: 'You found me... I’ve been waiting.'";
-                break;
-            default:
-                status = "The person blinks silently. No response.";
+        if (noun.equals("person") && currentRoom.getItemsHashMap().containsKey("person")) {
+            switch (currentRoom.getName()) {
+                case "Labratory":
+                    status = "The person stares blankly and whispers: 'You must solve the puzzle to escape...'";
+                    break;
+                case "Armory":
+                    status = "The person smiles softly: 'You found me... I’ve been waiting.'";
+                    break;
+                default:
+                    status = "The person blinks silently. No response.";
+            }
+        } else if (noun.equals("person")) {
+            status = "Theres no person here to talk to.";
         }
-    } else if (noun.equals("person")) {
-        status = "Theres no person here to talk to.";
     }
-}
 
 
     private static void handleTake(String noun) {
@@ -99,7 +99,6 @@ public class RoomAdventure {
         } else {
             status = "I can't eat that but I added it to the inventory";
         }
-
     }
 
     private static void handleAnswer(String noun) {
@@ -119,59 +118,57 @@ public class RoomAdventure {
     private static String redText(String text) {
         return Globals.RED + text + Globals.RESET;
     }
+
     private static void setupGame() {
-        Room room1 = new Room("Room 1");
-        Room room2 = new Room("Room 2");
-        Room room3 = new Room("Room 3");
-        Room room4 = new Room("Room 4");
+        Room livingRoom = new Room("Living Room");
+        Room foyer = new Room("Foyer");
+        Room armory = new Room("Armory");
+        Room labratory = new Room("Labratory");
+        Room riddleRoom = new Room("Riddle Room");
 
-
-
-
-        String[] room1Grabbables = {"key"};
+        String[] livingRoomGrabbables = {"key"};
         Edible chickenLeg = new Edible("chicken", "a good looking grilled chicken leg", "you ate the chicken leg and feel restored", 20);
         Edible[] edibles1 = {chickenLeg};
-        room1.addEdibles(edibles1);
-        room1.addExit("east", room2);
-        room1.addExit("north", room3);
-        room1.addItem("chair", "It is a chair with a plate of " + redText("chicken") + " on it");
-        room1.addItem("desk", "there is an old wooden desk with a " + redText("key") + " on top");
-        room1.setGrabbables(room1Grabbables);
+        livingRoom.addEdibles(edibles1);
+        livingRoom.addExit("east", foyer);
+        livingRoom.addExit("north", armory);
+        livingRoom.addItem("chair", "It is a chair with a plate of " + redText("chicken") + " on it");
+        livingRoom.addItem("desk", "there is an old wooden desk with a " + redText("key") + " on top");
+        livingRoom.setGrabbables(livingRoomGrabbables);
 
-        String[] room2Grabbables = {"coal"};
-        room2.addExit("west", room1);
-        room2.addExit("north", room4);
-        room2.addItem("fireplace", "it is on fire");
-        room2.addItem("rug", "There is a lump of coal on the rug");
-        room2.setGrabbables(room2Grabbables);
+        String[] foyerGrabbables = {"coal"};
+        foyer.addExit("west", livingRoom);
+        foyer.addExit("north", labratory);
+        foyer.addItem("fireplace", "it is on fire");
+        foyer.addItem("rug", "There is a lump of " + redText("coal") + " on the rug");
+        foyer.setGrabbables(foyerGrabbables);
 
 
-        String[] room3Grabbables = {"ke"};
+        String[] armoryGrabbables = {"sword"};
         Edible beefPatty = new Edible("patty", "a old moldy beef patty", "You at the beef patty and instantly feel sick", -50);
         Edible[] edibles3 = {beefPatty};
-        room3.addExit("south", room1);
-        room3.addExit("east", room4);
-        room3.addItem("wall", "It is a wall with a " + redText("patty") + " stuck on it");
-        room3.addItem("floor", "floor description");
-        room3.setGrabbables(room3Grabbables);
-        room3.addEdibles(edibles3);
+        armory.addExit("south", livingRoom);
+        armory.addExit("east", labratory);
+        armory.addItem("wall", "A solid stone wall with a " + redText("patty") + " stuck on it");
+        armory.addItem("stand", "An ornate stand with a foreign " + redText("sword") + " layed upon in");
+        armory.setGrabbables(armoryGrabbables);
+        armory.addEdibles(edibles3);
 
 
-        String[] room4Grabbables = {"ke"};
-        room4.addExit("south", room2);
-        room4.addExit("west", room3);
-        room4.addItem("car", "there is a broken car in the room");
-        room4.addItem("person", "there is someone staring at you in the room");
-        room4.setGrabbables(room4Grabbables);
+        String[] labratoryGrabbables = {"microscope"};
+        labratory.addExit("south", foyer);
+        labratory.addExit("west", armory);
+        labratory.addItem("cabinent", "There is a chemical cabinent with a " + redText("microscope") + " in it");
+        labratory.addItem("person", "there is someone staring at you in the room");
+        labratory.setGrabbables(labratoryGrabbables);
 
         //adding riddle room by aayusha
-        Room riddleRoom = new Room("Riddle Room");
         riddleRoom.addItem("tablet", "There is an ancient stone tablet with an inscription: 'I speak without a mouth and hear without ears. What am I?'");
         riddleRoom.setGrabbables(new String[]{});
         //connecting riddle room to room 3
-        room3.addExit("north", riddleRoom);         
-        riddleRoom.addExit("south", room3);
-        currentRoom = room1;
+        armory.addExit("north", riddleRoom);         
+        riddleRoom.addExit("south", armory);
+        currentRoom = livingRoom;
     }
 
     @SuppressWarnings("java:S2189")
@@ -283,7 +280,7 @@ class Room {
     @Override
     public String toString() {
         String result = "\nLocation:" + name;
-        result += "\n You have " + Globals.health + " remaining" ;
+        result += "\nYou have " + Globals.health + " remaining" ;
         result += "\nYou See ";
         for (String item: itemsHashMap.keySet()) {
             result +=item + " ";
