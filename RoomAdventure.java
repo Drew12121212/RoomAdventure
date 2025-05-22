@@ -115,7 +115,7 @@ public class RoomAdventure {
     }
 
 
- // Feature added by Ash: 'use' command
+ // Feature added by Ashish'use' command
  
 private static void handleUse(String noun) {
     status = "You can't use that.";
@@ -124,7 +124,6 @@ private static void handleUse(String noun) {
             if (noun.equals("key") && currentRoom.getName().equals("Labratory")) {
                 currentRoom.addItem("note", "A glowing note that reads: 'The answer is echo.'");
 
-                // Add 'note' to grabbables so it can be taken
                 String[] currentGrabbables = currentRoom.getGrabbables();
                 String[] newGrabbables = new String[currentGrabbables.length + 1];
                 for (int i = 0; i < currentGrabbables.length; i++) {
@@ -136,6 +135,12 @@ private static void handleUse(String noun) {
                 status = "You used the key to unlock a drawer. A glowing note appears!";
             } else if (noun.equals("coal") && currentRoom.getName().equals("Riddle Room")) {
                 status = "You used the coal on the tablet: '...without a mouth...' appears.";
+            } else if (noun.equals("flaming_sword") && currentRoom.getName().equals("Armory")) {
+                status = "You wave the flaming sword. A hidden passage opens behind the wall!";
+                currentRoom.addExit("secret", new Room("Secret Chamber"));
+            } else if (noun.equals("decoded_note") && currentRoom.getName().equals("Riddle Room")) {
+                status = "You read the decoded note: 'Echo is the answer.' The stone tablet crumbles.";
+                puzzleSolved = true;
             } else {
                 status = "You used the " + noun + ", but nothing happened.";
             }
@@ -143,6 +148,7 @@ private static void handleUse(String noun) {
         }
     }
 }
+
 
 
 // Feature added by Ashish 'combine' command
@@ -166,6 +172,10 @@ private static void handleCombine(String noun1, String noun2) {
             inventory[firstIndex] = "decoded_note";
             inventory[secondIndex] = null;
             status = "You used the microscope to examine the note. You now have a decoded note!";
+        } else if ((noun1.equals("coal") && noun2.equals("patty")) || (noun1.equals("patty") && noun2.equals("coal"))) {
+            inventory[firstIndex] = "burnt_patty";
+            inventory[secondIndex] = null;
+            status = "You burned the patty using coal. It's now a burnt patty!";
         } else {
             status = "Those items can't be combined.";
         }
@@ -173,6 +183,7 @@ private static void handleCombine(String noun1, String noun2) {
         status = "You don't have both items.";
     }
 }
+
 
 
 
